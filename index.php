@@ -8,6 +8,8 @@
 <head>
     <title>NRGenie</title>
     <link href="css/leaflet.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="css/main.css" rel="stylesheet"/>
     <script type="text/javascript" src="js/functions.js"></script>
     <script type="text/javascript" src="js/leaflet-src.js"></script>
     <script type="text/javascript" src="js/jquery-3.1.1.js"></script>
@@ -15,22 +17,24 @@
 </head>
 
 <body>
-<div id="map" style=" height: 98vh; width: 99vw;">
+<div id="map" class="map">
 </div>
 
 <script type="text/javascript"> <!--
-    mymap = L.map('map', {
+    myMap = L.map('map', {
         center: [51.505, -0.09],
         zoom: 3,
         minZoom: 3,
-        maxZoom: 5
+        maxZoom: 5,
+        worldCopyJump: true
         }
     );
+    currentZoom = 3;
 
     L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1Ijoiam9hY2hpbW1pbG5lciIsImEiOiJjajBoNGphMDQwMDQ3MzNxcmVhYmhnMG1uIn0.QtFJHG2sunTWf-Xt32JxzA', {
         attribution: "Map data &copy; <a href='http://openstreetmap.org'<OpenStreetMap&lt;/a> contributors, <a href='http://creativecommons.org/licenses/by-sa/2.0/'>CC-BY-SA</a>, Imagery © <a href='http://mapbox.com'>Mapbox</a>",
         maxZoom: 18
-    }).addTo(mymap);
+    }).addTo(myMap);
 
     //mymap.locate({setView: true, maxZoom: 16});
     generateMarkers();
