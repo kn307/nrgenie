@@ -36,8 +36,9 @@
         maxZoom: 18
     }).addTo(myMap);
 
-    //mymap.locate({setView: true, maxZoom: 16});
-    generateMarkers();
+    //generateMarkers();
+    getCountryMarkers();
+    getSingleResourceMarkers();
 //-->
 </script>
 

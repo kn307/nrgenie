@@ -12,3 +12,9 @@
   height: 400px;
   width: 400px;
 }
+
+.countryGraphCanvas {
+    height: 350px;
+    width: 400px;
+    vertical-align: top;
+}
