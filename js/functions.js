@@ -8,6 +8,10 @@ var currentGraphSlideDataSets;
 function getCountryMarkers() {
     $.getJSON( "php/GetCountryMarkers.php", function(data) {
         createCountryMarkers(data);
+        $('.countryMarkerFade').hide();
+        myMap.spin(false);
+        $('.countryMarkerFade').fadeIn('slow');
+
         myMap.on("zoomend", function (e) {
             var newZoom = myMap.getZoom();
             if ((currentZoom < 5) && newZoom === 5) {
@@ -28,7 +32,6 @@ function getCountryMarkers() {
 function getSingleResourceMarkers() {
     $.getJSON("php/GetSingleResourceMarkers.php", function(data) {
         createSingleResourceMarkers(data);
-        //console.log(singleResourceMarkers);
         $(".singleResourceMarkerFade").hide();
     });
 }
@@ -48,8 +51,8 @@ function createCountryMarkers(countryMarkerData) {
             popupContent += "<canvas id='" + canvasID + "' class='countryGraphCanvas " + slideshowClass + "' width='400px' height='350px'></canvas>";
         });
         popupContent += "<div class='w3-center w3-container w3-section w3-large w3-text-black w3-display-bottommiddle' style='width:100%;z-index:999'>" +
-                "<div class='w3-left w3-hover-text-khaki' onclick='incrementGraphSlide(-1)'>&#10094;</div>" +
-                "<div class='w3-right w3-hover-text-khaki' onclick='incrementGraphSlide(1)'>&#10095;</div>";
+                "<div class='w3-left w3-hover-text-khaki slideshowNavigation' onclick='incrementGraphSlide(-1)'>&#10094;</div>" +
+                "<div class='w3-right w3-hover-text-khaki slideshowNavigation' onclick='incrementGraphSlide(1)'>&#10095;</div>";
 
         for (var i = 0; i < countryMarker.resourceDataSets.length; i++) {
             popupContent += "<span class='w3-badge " + slideshowDotsClass + " w3-border w3-transparent w3-hover-grey' onclick='setGraphSlide(" + i + ")'></span>";
@@ -64,8 +67,6 @@ function createCountryMarkers(countryMarkerData) {
             currentGraphSlideDataSets = countryMarker.resourceDataSets;
             showGraphSlide(graphSlideIndex);
         });
-
-       // countryMarkers.push(marker);
     });
 }
 
@@ -109,7 +110,11 @@ function createSingleResourceMarkers(singleResourceMarkerData) {
         $(marker._icon).addClass("singleResourceMarkerFade");
 
         var canvasID = (singleResourceMarker.cityName + "ChartCanvas").replace(/\s/g,'');
-        marker.bindPopup("<div class='popupPanel'><canvas id='" + canvasID + "' class='graphCanvas' width='400px' height='400px'></canvas></div>", {
+        var popupContent = "<div class='popupPanel'><canvas id='" + canvasID + "' class='graphCanvas' width='400px' height='325px'></canvas>" +
+                "<hr/>" +
+                "<p>Testing testing testing testing testing testing testing testing testing testing testing testing testing testing testing</p>" +
+            "</div>";
+        marker.bindPopup(popupContent, {
             minWidth : 400
         }).on("popupopen", function() {
             fillGraphContext(singleResourceMarker.resourceDataSet, canvasID);
@@ -121,18 +126,26 @@ function fillGraphContext(resourceDataSet, canvasID) {
     var labels = [];
     var values = [];
     var fillColours = [];
+    var borderColours = [];
     resourceDataSet.dataPoints.forEach(function(dataPoint) {
-        labels.push(dataPoint.yValue);
+        if (resourceDataSet.xAxisName === "Year") {
+            var yValue = dataPoint.yValue.substring(0, 4);
+        } else {
+            var yValue = dataPoint.yValue;
+        }
+        labels.push(yValue);
         values.push(dataPoint.xValue);
         if (!dataPoint.isForecasted) {
             fillColours.push("rgba(75,192,192,0.4)");
+            borderColours.push("rgba(75,192,192,1)");
         } else {
             fillColours.push("rgba(255,153,153,0.4)");
+            borderColours.push("rgba(255,153,153,1)");
         }
     });
 
     var chartCtx = $("#" + canvasID);
-    var myChart = new Chart(chartCtx, {
+    new Chart(chartCtx, {
         type: "bar",
         data: {
             labels: labels,
@@ -142,16 +155,16 @@ function fillGraphContext(resourceDataSet, canvasID) {
                     fill: false,
                     lineTension: 0.1,
                     backgroundColor: fillColours,
-                    borderColor: "rgba(75,192,192,1)",
+                    borderColor: borderColours,
                     borderCapStyle: 'butt',
                     borderDash: [],
                     borderDashOffset: 0.0,
                     borderJoinStyle: 'miter',
-                    pointBorderColor: "rgba(75,192,192,1)",
+                    pointBorderColor: borderColours,
                     pointBackgroundColor: "#fff",
                     pointBorderWidth: 1,
                     pointHoverRadius: 5,
-                    pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                    pointHoverBackgroundColor: borderColours,
                     pointHoverBorderColor: "rgba(220,220,220,1)",
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,
@@ -166,6 +179,16 @@ function fillGraphContext(resourceDataSet, canvasID) {
                 yAxes: [{
                     ticks: {
                         beginAtZero:true
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: resourceDataSet.yAxisName
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: {
+                        display: true,
+                        labelString: resourceDataSet.xAxisName
                     }
                 }]
             },
@@ -174,25 +197,6 @@ function fillGraphContext(resourceDataSet, canvasID) {
             }
         }
     });
-}
-
-function refreshMarkers() {
-    if (myMap.getZoom() === 5) {
-        for (countryMarker in countryMarkers) {
-            myMap.removeLayer(countryMarker);
-        }
-        for (singleResourceMarker in singleResourceMarkers) {
-            singleResourceMarker.addTo(myMap);
-        }
-    } else {
-        for (singleResourceMarker in singleResourceMarkers) {
-            myMap.removeLayer(singleResourceMarker);
-        }
-        for (countryMarker in countryMarkers) {
-            countryMarker.addTo(myMap);
-        }
-
-    }
 }
 
 function getResourceIcon(resourceType) {

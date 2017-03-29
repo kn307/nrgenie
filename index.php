@@ -14,6 +14,8 @@
     <script type="text/javascript" src="js/leaflet-src.js"></script>
     <script type="text/javascript" src="js/jquery-3.1.1.js"></script>
     <script type="text/javascript" src="js/Chart.bundle.js"></script>
+    <script type="text/javascript" src="js/spin.js"></script>
+    <script type="text/javascript" src="js/leaflet.spin.js"></script>
 </head>
 
 <body>
@@ -35,8 +37,7 @@
         attribution: "Map data &copy; <a href='http://openstreetmap.org'<OpenStreetMap&lt;/a> contributors, <a href='http://creativecommons.org/licenses/by-sa/2.0/'>CC-BY-SA</a>, Imagery © <a href='http://mapbox.com'>Mapbox</a>",
         maxZoom: 18
     }).addTo(myMap);
-
-    //generateMarkers();
+    myMap.spin(true, {lines: 15, length: 10, scale: 2.0, color: "#FFF"});
     getCountryMarkers();
     getSingleResourceMarkers();
 //-->

@@ -18,3 +18,7 @@
     width: 400px;
     vertical-align: top;
 }
+
+.slideshowNavigation:hover {
+    cursor:pointer;
+}
