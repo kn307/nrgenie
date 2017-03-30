@@ -1,5 +1,8 @@
 var myMap;
 var currentZoom;
+
+var countryMarkers;
+
 var graphSlideIndex;
 var currentGraphSlideElements;
 var currentGraphSlideDots;
@@ -7,25 +10,62 @@ var currentGraphSlideDataSets;
 
 function getCountryMarkers() {
     $.getJSON( "php/GetCountryMarkers.php", function(data) {
+        countryMarkers = data;
         createCountryMarkers(data);
         $('.countryMarkerFade').hide();
         myMap.spin(false);
         $('.countryMarkerFade').fadeIn('slow');
+        $("#compareButton").fadeIn('slow');
 
-        myMap.on("zoomend", function (e) {
-            var newZoom = myMap.getZoom();
-            if ((currentZoom < 5) && newZoom === 5) {
-                myMap.closePopup();
-                $('.countryMarkerFade').fadeOut('slow');
-                $('.singleResourceMarkerFade').fadeIn('slow');
-            }
-            else if (currentZoom === 5 && newZoom < 5) {
-                myMap.closePopup();
-                $('.singleResourceMarkerFade').fadeOut('slow');
-                $('.countryMarkerFade').fadeIn('slow');
-            }
-            currentZoom = newZoom;
+        initPageEvents();
+    });
+}
+
+function initPageEvents() {
+    myMap.on("zoomend", function (e) {
+        var newZoom = myMap.getZoom();
+        if ((currentZoom < 5) && newZoom === 5) {
+            myMap.closePopup();
+            $('.countryMarkerFade').fadeOut('slow');
+            $('.singleResourceMarkerFade').fadeIn('slow');
+        }
+        else if (currentZoom === 5 && newZoom < 5) {
+            myMap.closePopup();
+            $('.singleResourceMarkerFade').fadeOut('slow');
+            $('.countryMarkerFade').fadeIn('slow');
+        }
+        currentZoom = newZoom;
+    });
+
+    $(document).click(function (event) {
+        var clickover = $(event.target);
+        var _opened = $(".panel-collapse").hasClass("collapse in");
+        if (_opened === true && !clickover.parents('#comparePanel').length) {//hasClass("comparePanel") && !clickover.hasClass("cmpPnl") && !clickover.hasClass("dropdown-toggle")) {
+            $("#compareButton").click();
+        }
+    });
+
+    $(function() {
+
+        $('#resourceTypeDropdown').on('change', function(){
+            var selected = $(this).find("option:selected").val();
+            handleResourceTypeDropdownClick(selected);
         });
+
+    });
+
+    $(function() {
+
+        $('#countrySelectDropdown').on('change', function(){
+            var selected = $('#countrySelectDropdown option:selected');
+            var countries = [];
+            $(selected).each(function(index, selected){
+                countries.push($(this).val());
+            });
+
+            handleCountrySelectDropdownChange(countries);
+        });
+
     });
 }
 
@@ -55,7 +95,10 @@ function createCountryMarkers(countryMarkerData) {
                 "<div class='w3-right w3-hover-text-khaki slideshowNavigation' onclick='incrementGraphSlide(1)'>&#10095;</div>";
 
         for (var i = 0; i < countryMarker.resourceDataSets.length; i++) {
-            popupContent += "<span class='w3-badge " + slideshowDotsClass + " w3-border w3-transparent w3-hover-grey' onclick='setGraphSlide(" + i + ")'></span>";
+            if (i > 0) {
+                popupContent += " ";
+            }
+            popupContent += "<span class='w3-badge w3-border w3-transparent w3-hover-grey " + slideshowDotsClass + "' onclick='setGraphSlide(" + i + ")'></span>";
         }
         popupContent += "</div></div>";
         marker.bindPopup(popupContent, {
@@ -81,7 +124,7 @@ function setGraphSlide(n) {
 function showGraphSlide(n) {
     var i;
     if (n > currentGraphSlideElements.length - 1) {graphSlideIndex = 0}
-    if (n < 1) {graphSlideIndex = currentGraphSlideElements.length - 1}
+    if (n < 0) {graphSlideIndex = currentGraphSlideElements.length - 1}
     for (i = 0; i < currentGraphSlideElements.length; i++) {
         currentGraphSlideElements[i].style.display = "none";
     }
@@ -127,6 +170,12 @@ function fillGraphContext(resourceDataSet, canvasID) {
     var values = [];
     var fillColours = [];
     var borderColours = [];
+    var normalColour = "#" + intToRGB(hashCode(resourceDataSet.resourceDataSetTitle));
+    var normalColourFill = hexToRgbA(normalColour, 0.6);
+    var normalColourBorder = hexToRgbA(normalColour, 1);
+    var forecastColour = shadeBlendConvert(0.6, normalColour);
+    var forecastColourFill = hexToRgbA(forecastColour, 0.6);
+    var forecastColourBorder = hexToRgbA(forecastColour, 1);
     resourceDataSet.dataPoints.forEach(function(dataPoint) {
         if (resourceDataSet.xAxisName === "Year") {
             var yValue = dataPoint.yValue.substring(0, 4);
@@ -136,11 +185,11 @@ function fillGraphContext(resourceDataSet, canvasID) {
         labels.push(yValue);
         values.push(dataPoint.xValue);
         if (!dataPoint.isForecasted) {
-            fillColours.push("rgba(75,192,192,0.4)");
-            borderColours.push("rgba(75,192,192,1)");
+            fillColours.push(normalColourFill);
+            borderColours.push(normalColourBorder);
         } else {
-            fillColours.push("rgba(255,153,153,0.4)");
-            borderColours.push("rgba(255,153,153,1)");
+            fillColours.push(forecastColourFill);
+            borderColours.push(forecastColourBorder);
         }
     });
 
@@ -197,15 +246,4 @@ function fillGraphContext(resourceDataSet, canvasID) {
             }
         }
     });
-}
-
-function getResourceIcon(resourceType) {
-    switch(resourceType) {
-        case "Oil":
-            return "images/oilIcon.png";
-        case "Wind":
-            return "images/windIcon.png";
-        case "Gas":
-            return "images/gasIcon.png";
-    }
 }
