@@ -7,4 +7,5 @@ class SingleResourceMarker
     public $latitude;
     public $longitude;
     public $resourceDataSet;
+    public $description;
 }

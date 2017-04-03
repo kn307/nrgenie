@@ -155,7 +155,7 @@ function createSingleResourceMarkers(singleResourceMarkerData) {
         var canvasID = (singleResourceMarker.cityName + "ChartCanvas").replace(/\s/g,'');
         var popupContent = "<div class='popupPanel'><canvas id='" + canvasID + "' class='graphCanvas' width='400px' height='325px'></canvas>" +
                 "<hr/>" +
-                "<p>Testing testing testing testing testing testing testing testing testing testing testing testing testing testing testing</p>" +
+                "<p>" + singleResourceMarker.description + "</p>" +
             "</div>";
         marker.bindPopup(popupContent, {
             minWidth : 400

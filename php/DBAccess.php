@@ -76,8 +76,7 @@ function getCountryMarkers() {
 function getSingleResourceMarkers() {
     $connection = getConnection();
 
-    if (!($statement = $connection->prepare("SELECT srm.ResourceType, srm.CityName, srm.Longitude, srm.Latitude, rds.* FROM SingleResourceMarker srm 
-                                                JOIN ResourceDataSet rds ON srm.SingleResourceMarkerID = rds.SingleResourceMarkerID"))) {
+    if (!($statement = $connection->prepare("SELECT srm.ResourceType, srm.CityName, srm.Longitude, srm.Latitude, srm.Description, rds.* FROM SingleResourceMarker srm JOIN ResourceDataSet rds ON srm.SingleResourceMarkerID = rds.SingleResourceMarkerID"))) {
         echo "Prepare failed: (" . $connection->errno . ") " . $connection->error;
     }
     if (!$statement->execute()) {
@@ -85,6 +84,7 @@ function getSingleResourceMarkers() {
     }
 
     $result = $statement->get_result();
+   // return $result->fetch_assoc();
     $singleResourceMarkers = [];
     populateSingleResourceMarkerList($singleResourceMarkers, $result);
 
@@ -138,11 +138,13 @@ function populateResourceDataSetList(&$resourceDataSetList, &$queryResult) {
 function populateSingleResourceMarkerList(&$singleResourceMarkersList, &$queryResult) {
     // Create an object for each result and copy in the details
     while ($row = $queryResult->fetch_assoc()) {
+
         $singleResourceMarker = new SingleResourceMarker();
         $singleResourceMarker->resourceType = $row['ResourceType'];
         $singleResourceMarker->cityName = $row['CityName'];
         $singleResourceMarker->latitude = $row['Latitude'];
         $singleResourceMarker->longitude = $row['Longitude'];
+        $singleResourceMarker->description = $row['Description'];
         $singleResourceMarker->resourceDataSet = new ResourceDataSet();
     $singleResourceMarker->resourceDataSet->resourceDataSetID = $row['ResourceDataSetID'];
         $singleResourceMarker->resourceDataSet->resourceDataSetTitle = $row['ResourceDataSetTitle'];
